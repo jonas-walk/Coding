@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Tic Tac Toe</title>
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-image: url('./Space.jpeg'); /* Dateiname ggf. anpassen */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
+
+    /* Das Spielfeld (600px x 600px) */
+    .Spielfeld {
+      border-collapse: separate;
+      border-spacing: 16px;
+      width: 600px; 
+      height: 600px;
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+
+    .Spielfeld td {
+      width: 33.33%;
+      height: 33.33%;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 5rem;
+      font-weight: bold;
+      color: transparent; /* Platzhalter-Buchstaben bleiben unsichtbar */
+      cursor: pointer;
+      
+      /* Neon Space Techno-Rahmen & Styling */
+      background: rgba(10, 15, 35, 0.7);
+      border: 4px solid #00ffff;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), inset 0 0 15px rgba(0, 255, 255, 0.25);
+      transition: all 0.25s ease-in-out;
+    }
+
+    /* Leuchteffekt beim Hover */
+    .Spielfeld td:hover {
+      background: rgba(0, 255, 255, 0.25);
+      border-color: #ff00ff;
+      box-shadow: 0 0 35px rgba(255, 0, 255, 0.9), inset 0 0 20px rgba(255, 0, 255, 0.5);
+      transform: scale(1.04);
+    }
+
+    /* Neon-Effekte für X und O */
+    .Spielfeld td.x-mark {
+      color: #00ffff !important;
+      text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    }
+
+    .Spielfeld td.o-mark {
+      color: #ff00ff !important;
+      text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+    }
+
+    /* --- Overlays (Start Screen & Gewinner-Popup) --- */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(5, 8, 20, 0.88);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease-in-out;
+      z-index: 100;
+    }
+
+    .overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .card {
+      background: rgba(10, 15, 35, 0.9);
+      border: 3px solid #00ffff;
+      border-radius: 24px;
+      padding: 40px 50px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(0, 255, 255, 0.6), inset 0 0 20px rgba(0, 255, 255, 0.3);
+      transform: scale(0.9);
+      transition: transform 0.4s ease-in-out;
+      max-width: 90vw;
+    }
+
+    .overlay.show .card {
+      transform: scale(1);
+    }
+
+    /* Hauptüberschrift / Title */
+    .card h1 {
+      font-size: 2.8rem;
+      letter-spacing: 4px;
+      color: #00ffff;
+      text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      color: #ffffff;
+      font-size: 1.5rem;
+      letter-spacing: 3px;
+      opacity: 0.9;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    /* Container für die Aktions-Buttons */
+    .button-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    /* Neon Button Styling */
+    .btn {
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ffffff;
+      background: transparent;
+      border: 3px solid #ff00ff;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 0, 255, 0.6), inset 0 0 10px rgba(255, 0, 255, 0.4);
+      transition: all 0.25s ease-in-out;
+      letter-spacing: 2px;
+    }
+
+    .btn:hover {
+      background: rgba(255, 0, 255, 0.3);
+      box-shadow: 0 0 35px rgba(255, 0, 255, 1), inset 0 0 20px rgba(255, 0, 255, 0.8);
+      transform: scale(1.05);
+      color: #00ffff;
+      border-color: #00ffff;
+    }
+
+    .btn.active {
+      background: rgba(0, 255, 255, 0.25);
+      border-color: #00ffff;
+      box-shadow: 0 0 30px #00ffff, inset 0 0 15px #00ffff;
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      border-color: #00ffff;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.4);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 255, 255, 0.3);
+      box-shadow: 0 0 35px rgba(0, 255, 255, 1), inset 0 0 20px rgba(0, 255, 255, 0.8);
+      color: #ff00ff;
+      border-color: #ff00ff;
+    }
+
+    /* --- NEU: AI Difficulty Slider Styling --- */
+    .difficulty-container {
+      margin-top: 25px;
+      padding: 15px;
+      background: rgba(0, 255, 255, 0.05);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      border-radius: 16px;
+      display: none; /* Erst sichtbar bei VS AI */
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .difficulty-container.show {
+      display: flex;
+    }
+
+    .difficulty-label {
+      color: #ffffff;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+    }
+
+    .difficulty-value {
+      color: #ff00ff;
+      font-weight: bold;
+      text-shadow: 0 0 10px #ff00ff;
+    }
+
+    /* Custom Slider Style */
+    .slider {
+      -webkit-appearance: none;
+      width: 80%;
+      height: 8px;
+      border-radius: 5px;
+      background: #101830;
+      outline: none;
+      border: 1px solid #00ffff;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #ff00ff;
+      cursor: pointer;
+      box-shadow: 0 0 15px #ff00ff;
+      transition: transform 0.2s;
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .start-game-btn {
+      margin-top: 25px;
+      width: 100%;
+    }
+  </style>
+
+  <script src="Tick-tack-toe.js" defer></script>
+</head>
+<body>
+
+<!-- Start Screen Overlay mit Modus & KI-Schwierigkeit -->
+<div id="start-overlay" class="overlay show">
+  <div class="card">
+    <h1>SPACE TIC TAC TOE</h1>
+    
+    <!-- Mode Selection -->
+    <div class="button-container">
+      <button id="vs-friend-btn" class="btn active">VS FRIEND</button>
+      <button id="vs-ai-btn" class="btn btn-secondary">VS AI</button>
+    </div>
+
+    <!-- NEU: KI Schwierigkeits-Regler -->
+    <div id="ai-difficulty-container" class="difficulty-container">
+      <div class="difficulty-label">
+        DIFFICULTY: <span id="difficulty-text" class="difficulty-value">HARD</span>
+      </div>
+      <input type="range" min="1" max="3" value="3" id="difficulty-slider" class="slider">
+    </div>
+
+    <!-- Start Button -->
+    <div class="button-container">
+      <button id="start-btn" class="btn start-game-btn">START GAME</button>
+    </div>
+  </div>
+</div>
+
+<!-- Spielfeld -->
+<table class="Spielfeld" id="Spielfeld">
+    <tr>
+        <td>a</td>
+        <td>b</td>
+        <td>c</td>
+    </tr>
+    <tr>
+        <td>d</td>
+        <td>e</td>
+        <td>f</td>
+    </tr>
+    <tr>
+        <td>g</td>
+        <td>h</td>
+        <td>i</td>
+    </tr>
+</table>
+
+<!-- Gewinner-Anzeige Pop-up mit Buttons -->
+<div id="win-overlay" class="overlay">
+  <div class="card">
+    <h1 id="win-title">PLAYER X WON!</h1>
+    <h2 id="win-subtitle">MISSION COMPLETED</h2>
+    <div class="button-container">
+      <button id="restart-btn" class="btn">PLAY AGAIN</button>
+      <button id="menu-btn" class="btn btn-secondary">MAIN MENU</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
