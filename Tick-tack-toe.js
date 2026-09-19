@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     diffContainer.classList.add('show');
   });
 
-  // NEU: Slider-Event zum Anpassen der Schwierigkeit
+  // Slider-Event zum Anpassen der Schwierigkeit
   diffSlider.addEventListener('input', (e) => {
     aiDifficulty = parseInt(e.target.value);
     diffText.textContent = diffLabels[aiDifficulty];
@@ -128,7 +128,7 @@ function pruefeSpielende() {
   return false;
 }
 
-// NEU: KI-Zug abhängig von der gewählten Schwierigkeitsstufe
+// KI-Zug abhängig von der gewählten Schwierigkeitsstufe
 function kiZug() {
   const felder = Array.from(document.querySelectorAll('#Spielfeld td'));
   const freieFelder = felder.map((f, index) => (!f.classList.contains('x-mark') && !f.classList.contains('o-mark') ? index : null)).filter(val => val !== null);
@@ -146,8 +146,12 @@ function kiZug() {
       besterZug = freieFelder[Math.floor(Math.random() * freieFelder.length)];
     }
   } else {
-    // HARD: 100% Minimax (Unschlagbar)
-    besterZug = berechneMinimaxZug(felder);
+    // HARD: 80% Minimax (perfekt), 20% Zufall (Fehlerchance)
+    if (Math.random() < 0.80) {
+      besterZug = berechneMinimaxZug(felder);
+    } else {
+      besterZug = freieFelder[Math.floor(Math.random() * freieFelder.length)];
+    }
   }
 
   if (besterZug !== -1 && besterZug !== undefined) {
