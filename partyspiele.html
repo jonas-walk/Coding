@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Party Spiele - Imposter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('party.jpeg');
+            background-color: #121212;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: rgba(0, 0, 0, 0.75);
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        h2, h3 { margin: 10px 0; }
+
+        p { font-size: 1.2rem; }
+
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- APP ICON --- */
+        .app-icon-wrapper {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            margin-top: 25px;
+            user-select: none;
+        }
+
+        .app-icon-tile {
+            width: 110px;
+            height: 110px;
+            background: radial-gradient(circle at 30% 30%, #3a4a5d, #0f171e);
+            border-radius: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .app-icon-wrapper:hover .app-icon-tile {
+            transform: translateY(-5px) scale(1.05);
+        }
+
+        .imposter-character {
+            position: relative;
+            width: 50px;
+            height: 60px;
+        }
+
+        .imposter-body {
+            width: 42px;
+            height: 50px;
+            background: linear-gradient(135deg, #ff4d4d 0%, #b30000 100%);
+            border-radius: 22px 22px 10px 10px;
+            position: absolute;
+            top: 0;
+            left: 4px;
+            border: 2.5px solid #000;
+        }
+
+        .imposter-legs {
+            position: absolute;
+            bottom: 2px;
+            left: 8px;
+            width: 34px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .leg {
+            width: 12px;
+            height: 12px;
+            background: #b30000;
+            border: 2.5px solid #000;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .backpack {
+            width: 11px;
+            height: 30px;
+            background: linear-gradient(180deg, #ff4d4d, #990000);
+            border: 2.5px solid #000;
+            border-radius: 7px 0 0 7px;
+            position: absolute;
+            left: -6px;
+            top: 12px;
+        }
+
+        .visor {
+            width: 26px;
+            height: 15px;
+            background: linear-gradient(180deg, #a6e3e9 0%, #3f72af 100%);
+            border: 2px solid #000;
+            border-radius: 9px;
+            position: absolute;
+            top: 10px;
+            right: 2px;
+        }
+
+        .icon-label {
+            margin-top: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        /* --- CARDS & LISTS --- */
+        .setup-box, .game-card {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 10px 14px;
+            font-size: 1rem;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            background-color: #fff;
+            color: #000;
+        }
+
+        input[type="text"] { flex: 1; }
+        input[type="number"] { width: 70px; text-align: center; }
+
+        .player-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 20px 0;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 8px 15px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        /* --- TOGGLES & SLIDERS --- */
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .setting-label {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px; width: 20px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: #ff9f43; }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .range-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        /* --- BUTTONS --- */
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-start { background-color: #2ecc71; color: white; font-size: 1.2rem; }
+        .btn-add { background-color: #3498db; color: white; width: auto; margin-top: 0; }
+        .btn-secret { background-color: #e67e22; color: white; font-size: 1.1rem; }
+        .btn-win-crew { background-color: #2ecc71; color: white; margin-bottom: 5px; }
+        .btn-win-imposter { background-color: #e74c3c; color: white; }
+
+        .secret-box {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .imposter-text { color: #e74c3c; }
+        .word-text { color: #2ecc71; }
+
+        .round-badge {
+            background: #ff9f43;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* POPUP OVERLAY */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-card {
+            background: #1e272e;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- 1. HAUPTMENÜ -->
+        <div id="main-screen" class="screen active">
+            <h1>Party Spiele</h1>
+            <p>Wähle ein Spiel aus:</p>
+
+            <div id="imposter-icon" class="app-icon-wrapper">
+                <div class="app-icon-tile">
+                    <div class="imposter-character">
+                        <div class="backpack"></div>
+                        <div class="imposter-body">
+                            <div class="visor"></div>
+                        </div>
+                        <div class="imposter-legs">
+                            <div class="leg"></div>
+                            <div class="leg"></div>
+                        </div>
+                    </div>
+                </div>
+                <span class="icon-label">Imposter</span>
+            </div>
+        </div>
+
+        <!-- 2. EINSTELLUNGEN -->
+        <div id="imposter-screen" class="screen">
+            <h1>Imposter</h1>
+            <p>Füge Spieler hinzu & passe Optionen an</p>
+            
+            <div class="setup-box">
+                <div class="input-group">
+                    <input type="text" id="player-input" placeholder="Name eingeben...">
+                    <button id="add-player-btn" class="btn btn-add">Hinzufügen</button>
+                </div>
+
+                <ul id="player-list" class="player-list"></ul>
+
+                <!-- Anzahl Runden -->
+                <div class="setting-row">
+                    <span class="setting-label">🔄 Anzahl Runden:</span>
+                    <input type="number" id="total-rounds-input" min="1" max="20" value="5">
+                </div>
+
+                <!-- Anzahl Imposter Regler -->
+                <div class="setting-row">
+                    <span class="setting-label">🕵️ Imposter: <span id="imposter-count-label">1</span></span>
+                    <input type="range" id="imposter-count-range" class="range-slider" min="1" max="3" value="1">
+                </div>
+
+                <!-- Kinder-Modus Schalter -->
+                <div class="setting-row">
+                    <span class="setting-label">🎈 Kinder-Modus</span>
+                    <label class="switch">
+                        <input type="checkbox" id="kids-mode-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <button id="start-game-btn" class="btn btn-start">Spiel Starten</button>
+            </div>
+
+            <button id="back-btn" class="btn">Zurück zum Hauptmenü</button>
+        </div>
+
+        <!-- 3. ROLLENVERTEILUNG -->
+        <div id="reveal-screen" class="screen">
+            <div id="reveal-round-badge" class="round-badge">Runde 1 / 5</div>
+            <h1 id="current-player-name">Spieler Name</h1>
+            <p>Gib das Handy an diesen Spieler weiter.</p>
+
+            <div class="game-card">
+                <button id="show-word-btn" class="btn btn-secret">Rolle & Wort anzeigen</button>
+
+                <div id="secret-area" style="display: none;">
+                    <p style="margin-bottom: 5px;">Deine Rolle / Wort:</p>
+                    <div id="secret-word-display" class="secret-box">???</div>
+                    <button id="next-player-btn" class="btn">Gesehen (Verstecken & Weiter)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. DISKUSSION & GEWINN-SYSTEM -->
+        <div id="discussion-screen" class="screen">
+            <div id="discussion-round-badge" class="round-badge">Runde 1 / 5</div>
+            <h1>Diskussion</h1>
+            <p>Stellt euch gegenseitig Fragen!</p>
+
+            <div class="game-card">
+                <button id="resolve-btn" class="btn btn-secret">Auflösung anzeigen</button>
+
+                <div id="result-area" style="display: none;">
+                    <h3>Die Imposter waren:</h3>
+                    <p id="imposter-reveal-name" style="font-size: 1.5rem; font-weight: bold; color: #e74c3c;"></p>
+                    
+                    <h3>Das geheime Wort war:</h3>
+                    <p id="secret-reveal-word" style="font-size: 1.5rem; font-weight: bold; color: #2ecc71;"></p>
+
+                    <hr style="border-color: rgba(255,255,255,0.2); margin: 15px 0;">
+
+                    <h3>Wer hat gewonnen?</h3>
+                    <button id="win-crew-btn" class="btn btn-win-crew">Gute Spieler (+100 Pkt)</button>
+                    <button id="win-imposter-btn" class="btn btn-win-imposter">Imposter (+200 Pkt)</button>
+                </div>
+            </div>
+
+            <!-- LEADERBOARD -->
+            <div class="setup-box">
+                <h3>🏆 Gesamtwertung</h3>
+                <ul id="leaderboard-list" class="player-list"></ul>
+            </div>
+
+            <button id="restart-btn" class="btn btn-start">Nächste Runde starten</button>
+            <button id="change-setup-btn" class="btn">Spieler / Einstellungen ändern</button>
+        </div>
+
+    </div>
+
+    <!-- MODAL POPUP -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 id="modal-title">Achtung</h2>
+            <p id="modal-text"></p>
+            <button id="modal-close-btn" class="btn">Verstanden</button>
+        </div>
+    </div>
+
+    <script src="partyspiele.js"></script>
+</body>
+</html>
